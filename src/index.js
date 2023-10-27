@@ -7,7 +7,6 @@ const cookieParser = require('cookie-parser')
 const dbConnect = require('./config/dbConnect')
 const morgan = require('morgan')
 const cors = require('cors')
-
 const { errorHandler } = require('./middlewares/errorHandler')
 const authRouter = require('./routes/authRoute')
 const userRouter = require('./routes/userRoute')
@@ -15,6 +14,8 @@ const productRouter = require('./routes/productRoute')
 const categoryRouter = require('./routes/categoryRoute')
 const brandRouter = require('./routes/brandRoute')
 const colorRouter = require('./routes/colorRoute')
+const enquiryRouter = require('./routes/enquiryRoute')
+const uploadRouter = require('./routes/uploadRoute')
 
 dbConnect()
 
@@ -30,6 +31,8 @@ app.use('/api/product', productRouter)
 app.use('/api/category', categoryRouter)
 app.use('/api/brand', brandRouter)
 app.use('/api/color', colorRouter)
+app.use('/api/enquiry', enquiryRouter)
+app.use('/api/upload', uploadRouter)
 
 app.use(errorHandler)
 
