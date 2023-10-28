@@ -235,11 +235,11 @@ const getAllOrders = asyncHandler(async (req, res) => {
     }
 })
 
-const getOrderByUserId = asyncHandler(async (req, res) => {
+const getOrder = asyncHandler(async (req, res) => {
     const { id } = req.params
     validateID(id)
     try {
-        const userorders = await Order.findOne({ orderby: id })
+        const userorders = await Order.findOne({ _id: id })
             .populate("products.product")
             .populate("orderby")
             .exec();
@@ -276,6 +276,6 @@ module.exports = {
     createOrder,
     getOrders,
     getAllOrders,
-    getOrderByUserId,
+    getOrder,
     updateOrderStatus
 }

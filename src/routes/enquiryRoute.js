@@ -5,7 +5,7 @@ const { jwtMiddleware, isAdmin } = require('../middlewares/jwtMiddleware')
 
 router.get('/', getEnquiries)
 router.get('/:id', getEnquiryById)
-router.post('/', jwtMiddleware, isAdmin, createEnquiry)
+router.post('/', createEnquiry)
 router.put('/:id', jwtMiddleware, isAdmin, updateEnquiry)
 router.delete('/:id', jwtMiddleware, isAdmin, deleteEnquiry)
 

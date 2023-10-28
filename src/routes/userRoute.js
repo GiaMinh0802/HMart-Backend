@@ -15,7 +15,7 @@ const {
     createOrder,
     getOrders,
     getAllOrders,
-    getOrderByUserId,
+    getOrder,
     updateOrderStatus
 } = require('../controller/userController')
 const { jwtMiddleware, isAdmin } = require('../middlewares/jwtMiddleware')
@@ -27,8 +27,10 @@ router.get('/cart', jwtMiddleware, getUserCart)
 router.delete('/cart', jwtMiddleware, emptyCart)
 
 router.get('/order', jwtMiddleware, getOrders)
-router.get('/all-order', jwtMiddleware, isAdmin, getAllOrders)
 router.post('/order', jwtMiddleware, createOrder)
+router.get('/all-order', jwtMiddleware, isAdmin, getAllOrders)
+router.get('/order/:id', jwtMiddleware, isAdmin, getOrder)
+
 
 router.get('/', getUsers)
 router.get('/:id', jwtMiddleware, getUserById)
