@@ -1,6 +1,5 @@
-const fs = require("fs");
-const asyncHandler = require("express-async-handler");
-const { cloudinaryUploadImg, cloudinaryDeleteImg } = require("../utils/cloudinary");
+const asyncHandler = require("express-async-handler")
+const { cloudinaryUploadImg, cloudinaryDeleteImg } = require("../utils/cloudinary")
 
 const uploadImages = asyncHandler(async (req, res) => {
     try {
@@ -11,7 +10,6 @@ const uploadImages = asyncHandler(async (req, res) => {
             const { path } = file
             const newpath = await uploader(path)
             urls.push(newpath)
-            fs.unlinkSync(path)
         }
         const images = urls.map((file) => {
             return file
