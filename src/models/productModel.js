@@ -42,13 +42,19 @@ var productSchema = new mongoose.Schema({
             url: String
         }
     ],
-    color: [],
+    color: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Color"
+        }
+    ],
     ratings: [{
         star: Number,
         postedby: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
-        }
+        },
+        comment: String,
     }],
     totalrating: {
         type: Number,

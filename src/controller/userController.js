@@ -115,32 +115,17 @@ const getWishlist = asyncHandler(async (req, res) => {
 })
 
 const userCart = asyncHandler(async (req, res) => {
-    const { cart } = req.body
+    const { productId, color, quantity, price } = req.body
     const { _id } = req.user
     validateID(_id)
+    validateID(productId)
     try {
-        let products = []
-        const alreadyExistCart = await Cart.findOne({ orderby: _id })
-        if (alreadyExistCart) {
-            await Cart.findOneAndRemove({ orderby: _id })
-        }
-        for (let i = 0; i < cart.length; i++) {
-            let object = {}
-            object.product = cart[i]._id
-            object.count = cart[i].count
-            object.color = cart[i].color
-            let getPrice = await Product.findById(cart[i]._id).select("price").exec()
-            object.price = getPrice.price
-            products.push(object)
-        }
-        let cartTotal = 0
-        for (let i = 0; i < products.length; i++) {
-            cartTotal = cartTotal + products[i].price * products[i].count
-        }
         let newCart = await new Cart({
-            products,
-            cartTotal,
-            orderby: _id
+            userId: _id,
+            productId,
+            color,
+            quantity,
+            price
         }).save()
         res.json(newCart)
     } catch (error) {
@@ -153,7 +138,7 @@ const getUserCart = asyncHandler(async (req, res) => {
     const { _id } = req.user
     validateID(_id)
     try {
-        const cart = await Cart.findOne({ orderby: _id }).populate("products.product")
+        const cart = await Cart.find({ userId: _id }).populate("productId").populate("color")
         if (cart) {
             res.json(cart)
         } else {
@@ -165,101 +150,74 @@ const getUserCart = asyncHandler(async (req, res) => {
     }
 })
 
-const emptyCart = asyncHandler(async (req, res) => {
+const removeProductFromCart = asyncHandler(async (req, res) => {
     const { _id } = req.user
-    validateID(_id)
-    try {
-        await Cart.findOneAndRemove({ orderby: _id })
-        res.json({ message: "Empty cart" })
-    } catch (error) {
-        throw new Error(error)
-    }
-});
-
-const createOrder = asyncHandler(async (req, res) => {
-    const { _id } = req.user
-    validateID(_id)
-    try {
-        let userCart = await Cart.findOne({ orderby: _id })
-        let amount = userCart.cartTotal
-        await new Order({
-            products: userCart.products,
-            paymentIntent: {
-                id: uniqid(),
-                method: "COD",
-                amount: amount,
-                created: Date.now(),
-                currency: "USD"
-            },
-            orderby: _id,
-            orderStatus: "Cash on Delivery"
-        }).save()
-        let update = userCart.products.map((item) => {
-            return {
-                updateOne: {
-                    filter: { _id: item.product._id },
-                    update: { $inc: { quantity: -item.count, sold: +item.count } }
-                }
-            }
-        })
-        await Product.bulkWrite(update, {})
-        res.json({ message: "Successfully" })
-    } catch (error) {
-        throw new Error(error)
-    }
-})
-
-const getOrders = asyncHandler(async (req, res) => {
-    const { _id } = req.user
-    validateID(_id)
-    try {
-        const userorders = await Order.findOne({ orderby: _id })
-            .populate("products.product")
-            .populate("orderby")
-            .exec()
-        res.json(userorders)
-    } catch (error) {
-        throw new Error(error)
-    }
-})
-
-const getAllOrders = asyncHandler(async (req, res) => {
-    try {
-        const alluserorders = await Order.find()
-            .populate("products.product")
-            .populate("orderby")
-            .exec()
-        res.json(alluserorders)
-    } catch (error) {
-        throw new Error(error)
-    }
-})
-
-const getOrder = asyncHandler(async (req, res) => {
     const { id } = req.params
+    validateID(_id)
     validateID(id)
     try {
-        const userorders = await Order.findOne({ _id: id })
-            .populate("products.product")
-            .populate("orderby")
-            .exec();
-        res.json(userorders);
+        await Cart.findOneAndRemove({ userId: _id, _id: id })
+        res.json({ message: "Product Removed Cart" })
     } catch (error) {
-        throw new Error(error);
+        throw new Error(error)
     }
 })
 
-const updateOrderStatus = asyncHandler(async (req, res) => {
-    const { status } = req.body;
-    const { id } = req.params;
-    validateID(id);
+const removeCart = asyncHandler(async (req, res) => {
+    const { _id } = req.user
+    validateID(_id)
     try {
-        const updateOrderStatus = await Order.findByIdAndUpdate(id, { orderStatus: status }, { new: true })
-        res.json(updateOrderStatus);
+        await Cart.deleteMany({ userId: _id})
+        res.json({ message: "Cart Removed" })
     } catch (error) {
-        throw new Error(error);
+        throw new Error(error)
     }
-});
+})
+
+const updateQuantityProductFromCart = asyncHandler(async (req, res) => {
+    const { _id } = req.user
+    const { id, newQuantity } = req.params
+    validateID(_id)
+    validateID(id)
+    try {
+        const cartItem = await Cart.findOne({ userId: _id, _id: id })
+        cartItem.quantity = newQuantity
+        cartItem.save()
+        res.json(cartItem)
+    } catch (error) {
+        throw new Error(error)
+    }
+})
+
+const createOrder = asyncHandler(async (req, res) => {
+    const { shippingInfo, orderItems, totalPrice } = req.body
+    const { _id } = req.user
+    validateID(_id)
+    try {
+        const order = await Order.create({ shippingInfo, orderItems, totalPrice, user: _id })
+        res.json({ order })
+    } catch (error) {
+        throw new Error(error)
+    }
+})
+
+const getUserOrder = asyncHandler(async (req, res) => {
+    const { _id } = req.user
+    validateID(_id)
+    try {
+        const order = await Order.find({ user: _id })
+            .populate("user")
+            .populate("orderItems.product")
+            .populate("orderItems.color")
+        if (order) {
+            res.json(order)
+        } else {
+            res.json([])
+        }
+    } catch (error) {
+        throw new Error(error)
+    }
+})
 
 module.exports = {
     getUsers,
@@ -272,10 +230,9 @@ module.exports = {
     getWishlist,
     userCart,
     getUserCart,
-    emptyCart,
+    removeProductFromCart,
+    removeCart,
+    updateQuantityProductFromCart,
     createOrder,
-    getOrders,
-    getAllOrders,
-    getOrder,
-    updateOrderStatus
+    getUserOrder
 }
