@@ -15,7 +15,9 @@ const {
     removeCart,
     updateQuantityProductFromCart,
     createOrder,
-    getUserOrder
+    getUserOrder,
+    getAllOrders,
+    getOrder
 } = require('../controller/userController')
 const { jwtMiddleware, isAdmin } = require('../middlewares/jwtMiddleware')
 
@@ -29,6 +31,9 @@ router.put('/cart/:id/:newQuantity', jwtMiddleware, updateQuantityProductFromCar
 
 router.post('/order', jwtMiddleware, createOrder)
 router.get('/order', jwtMiddleware, getUserOrder)
+router.get('/order/:id', jwtMiddleware, isAdmin, getOrder)
+router.get('/all-order', jwtMiddleware, isAdmin, getAllOrders)
+
 
 router.get('/', getUsers)
 router.get('/:id', jwtMiddleware, getUserById)
