@@ -1,9 +1,12 @@
 const express = require('express')
 const router = express.Router()
-const { getProducts, getProductById, createProduct, updateProduct, deleteProduct, addToWishList, rating, uploadImages } = require('../controller/productController')
+const { getProducts, getProductById, createProduct, updateProduct, deleteProduct, addToWishList, rating, uploadImages, getProductRecommenders, getProductsForRecommenders, getRatingsForRecommenders } = require('../controller/productController')
 const { uploadPhoto, productImgResize } = require('../middlewares/uploadImages')
 const { jwtMiddleware, isAdmin } = require('../middlewares/jwtMiddleware')
 
+router.get('/product-recommenders', getProductsForRecommenders)
+router.get('/rating-recommenders', getRatingsForRecommenders)
+router.get('/recommenders', jwtMiddleware, getProductRecommenders)
 router.get('/', getProducts)
 router.get('/:id', getProductById)
 router.put('/wishlist', jwtMiddleware, addToWishList)

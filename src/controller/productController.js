@@ -3,6 +3,72 @@ const User = require("../models/userModel");
 const asyncHandler = require('express-async-handler')
 const slugify = require('slugify')
 const validateID = require('../utils/validate')
+const axios = require('axios')
+
+const getProductRecommenders = asyncHandler(async (req, res) => {
+    const { _id } = req.user;
+    const findUser = await User.findById(_id);
+    if (!findUser) {
+        throw new Error("User doesnot exist!");
+    }
+    try {
+        const products_rec = await axios.get(`http://localhost:8888/recommenders/${_id}}`);
+        const product_data = products_rec.data;
+        console.log(typeof(product_data))
+        const product_ids = product_data.map(item => item[0]);
+        console.log(product_ids)
+        if (Array.isArray(product_ids) && product_ids.length > 0) {
+            const product = await Product.findById(product_ids);
+            if (!product) {
+                return res.status(404).json({
+                    message: "Products not found!"
+                });
+            }
+            res.json(product);
+        } else {
+            return res.status(404).json({
+                message: "No product recommendations found!"
+            });
+        }
+    } catch (error) {
+        throw new Error(error)
+    }
+});
+
+const getProductsForRecommenders = asyncHandler(async (req, res) => {
+    try {
+        const getProducts = await Product.find().select("_id").select("title")
+        const formattedProducts = getProducts.map(product => ({
+            productId: product._id,
+            title: product.title,
+        }))
+        res.json(formattedProducts)
+    } catch (error) {
+        throw new Error(error)
+    }
+})
+
+
+const getRatingsForRecommenders = asyncHandler(async (req, res) => {
+    try {
+        const productsWithRatings = await Product.find({ "ratings": { $exists: true, $ne: [] } }).select("_id ratings.postedby ratings.star")
+        const formattedRatings = []
+        productsWithRatings.forEach(product => {
+            const productId = product._id
+            product.ratings.forEach(rating => {
+                const formattedRating = {
+                    productId: productId,
+                    userId: rating.postedby,
+                    rating: rating.star
+                }
+                formattedRatings.push(formattedRating)
+            })
+        })
+        res.json(formattedRatings)
+    } catch (error) {
+        throw new Error(error)
+    }
+})
 
 const getProducts = asyncHandler(async (req, res) => {
     try {
@@ -53,7 +119,7 @@ const getProductById = asyncHandler(async (req, res) => {
     validateID(id)
     try {
         const findProduct = await Product.findById(id).populate('color')
-        
+
         res.json(findProduct)
     } catch (error) {
         throw new Error(error)
@@ -184,4 +250,4 @@ const rating = asyncHandler(async (req, res) => {
     }
 })
 
-module.exports = { getProducts, getProductById, createProduct, updateProduct, deleteProduct, addToWishList, rating }
+module.exports = { getProducts, getProductById, createProduct, updateProduct, deleteProduct, addToWishList, rating, getProductRecommenders, getProductsForRecommenders, getRatingsForRecommenders }
