@@ -7,10 +7,15 @@ const { jwtMiddleware, isAdmin } = require('../middlewares/jwtMiddleware')
 router.get('/product-recommenders', getProductsForRecommenders)
 router.get('/rating-recommenders', getRatingsForRecommenders)
 router.get('/recommenders', jwtMiddleware, getProductRecommenders)
+
 router.get('/', getProducts)
 router.get('/:id', getProductById)
+
 router.put('/wishlist', jwtMiddleware, addToWishList)
-router.put('/rating', jwtMiddleware, rating)
+
+// router.put('/rating', jwtMiddleware, rating)
+router.put('/rating', rating)
+
 router.post('/', jwtMiddleware, isAdmin, createProduct)
 router.put('/:id', jwtMiddleware, isAdmin, updateProduct)
 router.delete('/:id', jwtMiddleware, isAdmin, deleteProduct)

@@ -17,9 +17,12 @@ const {
     createOrder,
     getUserOrder,
     getAllOrders,
-    getOrder
+    getOrder,
+    getUsersForRecommenders
 } = require('../controller/userController')
 const { jwtMiddleware, isAdmin } = require('../middlewares/jwtMiddleware')
+
+router.get('/user-recommenders', getUsersForRecommenders)
 
 router.get('/wishlist', jwtMiddleware, getWishlist)
 
@@ -33,7 +36,6 @@ router.post('/order', jwtMiddleware, createOrder)
 router.get('/order', jwtMiddleware, getUserOrder)
 router.get('/order/:id', jwtMiddleware, isAdmin, getOrder)
 router.get('/all-order', jwtMiddleware, isAdmin, getAllOrders)
-
 
 router.get('/', getUsers)
 router.get('/:id', jwtMiddleware, getUserById)

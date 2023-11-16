@@ -6,6 +6,20 @@ const asyncHandler = require('express-async-handler')
 const validateID = require('../utils/validate')
 const uniqid = require('uniqid')
 
+const getUsersForRecommenders = asyncHandler(async (req, res) => {
+    try {
+        const getUsers = await User.find({ role: "user" }).select("_id firstname lastname")
+        const formattedUsers = getUsers.map(user => ({
+            userId: user._id,
+            firstname: user.firstname,
+            lastname: user.lastname
+        }))
+        res.json(formattedUsers)
+    } catch (error) {
+        throw new Error(error)
+    }
+})
+
 const getUsers = asyncHandler(async (req, res) => {
     try {
         const getUsers = await User.find()
@@ -167,7 +181,7 @@ const removeCart = asyncHandler(async (req, res) => {
     const { _id } = req.user
     validateID(_id)
     try {
-        await Cart.deleteMany({ userId: _id})
+        await Cart.deleteMany({ userId: _id })
         res.json({ message: "Cart Removed" })
     } catch (error) {
         throw new Error(error)
@@ -236,9 +250,9 @@ const getOrder = asyncHandler(async (req, res) => {
     validateID(id)
     try {
         const userorders = await Order.findOne({ _id: id })
-        .populate("orderItems.product")
-        .populate("orderItems.color")
-        .populate("user")
+            .populate("orderItems.product")
+            .populate("orderItems.color")
+            .populate("user")
             .exec()
         res.json(userorders)
     } catch (error) {
@@ -263,5 +277,6 @@ module.exports = {
     createOrder,
     getUserOrder,
     getAllOrders,
-    getOrder
+    getOrder,
+    getUsersForRecommenders
 }
