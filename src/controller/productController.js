@@ -19,7 +19,11 @@ const getProductRecommenders = asyncHandler(async (req, res) => {
             const product = await Product.findById(product_id)
             return product
         })
-        const products = await Promise.all(productPromises)
+        let products = await Promise.all(productPromises)
+        if (products.length < 8) {
+            let additionalProduct = await Product.find().sort("-createdAt").limit(8-products.length)
+            products = products.concat(additionalProduct)
+        }
         res.json(products)
     } catch (error) {
         throw new Error(error)
