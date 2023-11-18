@@ -12,7 +12,7 @@ const getProductRecommenders = asyncHandler(async (req, res) => {
         throw new Error("User doesnot exist!");
     }
     try {
-        const products_rec = await axios.get(`http://localhost:8888/recommenders/${_id}`);
+        const products_rec = await axios.get(`http://207.148.120.240:8888/recommenders/${_id}`);
         const product_data = products_rec.data;
         const product_ids = Object.keys(product_data)
         const productPromises = product_ids.map(async (product_id) => {
