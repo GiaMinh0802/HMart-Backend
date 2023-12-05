@@ -21,7 +21,26 @@ const getProductRecommenders = asyncHandler(async (req, res) => {
         })
         let products = await Promise.all(productPromises)
         if (products.length < 8) {
-            let additionalProduct = await Product.find().sort("-createdAt").limit(8-products.length)
+            let additionalProduct = await Product.aggregate([
+                {
+                    $project: {
+                        _id: 1,
+                        title: 1,
+                        totalrating: 1,
+                        images: 1,
+                        brand: 1,
+                        price: 1,
+                        totalrating: 1,
+                        ratingsCount: { $size: "$ratings" }
+                    }
+                },
+                {
+                    $sort: { ratingsCount: -1 }
+                },
+                {
+                    $limit: 8 - products.length
+                }
+            ])
             products = products.concat(additionalProduct)
         }
         res.json(products)
