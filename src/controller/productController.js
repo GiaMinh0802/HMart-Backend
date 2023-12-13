@@ -133,7 +133,6 @@ const getProductById = asyncHandler(async (req, res) => {
     validateID(id)
     try {
         const findProduct = await Product.findById(id).populate('color').populate('ratings.postedby')
-
         res.json(findProduct)
     } catch (error) {
         throw new Error(error)
